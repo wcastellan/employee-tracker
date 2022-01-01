@@ -1,38 +1,18 @@
-// import express
-const express = require('express');
-const db = require('./db/connection');
-// add near top of file 
-const apiRoutes = require('./routes/apiRoutes');
+const mysql = require('mysql2');
 const inquirer = require('inquirer');
+const consoleTable = require('console.table');
+const connection = require('./db/connection');
+const express = require('express');
 
-// PORT designation
-const PORT = process.env.PORT || 3001;
 const app = express();
 
-// express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// add after express middleware
-app.use('/api', apiRoutes);
-
-// default response for amny other request (Not Found)
-app.use((req, res) => {
-    res.status(404).end();
-});
-
-// start server after db connection
-db.connect(err => {
+connection.connect(function (err) {
     if (err) throw err;
-    console.log('Database connected.');
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-    });
-    afterConnection();
+    menu();
 });
 
 // function after connection is established
-afterConnection = () => {
+menu = () => {
     console.log(`
     ================
     EMPLOYEE MANAGER
@@ -122,5 +102,16 @@ const promptUser = () => {
         if (choices === "No action") {
             connection.end()
         };
+    });
+};
+
+showDepartments = () => {
+    console.log('Showing all departments...\n');
+    const sql = `SELECT department.id AS id, department.name AS department FROM department`;
+
+    connection.promise().query(sql, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+        promptUser();
     });
 };
