@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
+
 const connection = require('./db/connection');
 const express = require('express');
 
@@ -105,13 +106,11 @@ const promptUser = () => {
     });
 };
 
-showDepartments = () => {
-    console.log('Showing all departments...\n');
-    const sql = `SELECT department.id AS id, department.name AS department FROM department`;
-
-    connection.promise().query(sql, (err, rows) => {
-        if (err) throw err;
-        console.table(rows);
-        promptUser();
-    });
-};
+function showDepartments() {
+    var query = 'SELECT * FROM department';
+        connection.query(query, function(err, res) {
+            if (err) throw err;
+            console.table('All Departments:', res);
+            promptUser();
+        });
+}
