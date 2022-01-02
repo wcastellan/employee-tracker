@@ -35,12 +35,6 @@ const promptUser = () => {
                         'Add a role',
                         'Add an employee',
                         'Update an employee role',
-                        'Update an employee manager',
-                        'View employees by department',
-                        'Delete a department',
-                        'Delete a role',
-                        'Delete an employee',
-                        'View depeartment budgets',
                         'No action']
         }
     ])
@@ -75,30 +69,6 @@ const promptUser = () => {
 
         if (choices === "Update an employee role") {
             updateEmployee();
-        }
-
-        if (choices === "Update an employee manager") {
-            updateManager();
-        }
-
-        if (choices === "View employees by department") {
-            employeeDepartment();
-        }
-
-        if (choices === "Delete a department") {
-            deleteDepartment();
-        }
-
-        if (choices === "Delete a role") {
-            deleteRole();
-        }
-
-        if (choices === "Delete an employee") {
-            deleteEmployee();
-        }
-
-        if (choices === "View department budgets") {
-            viewBudget();
         }
 
         if (choices === "No action") {
@@ -272,3 +242,45 @@ function addEmployee() {
         })
     })
 };
+
+// update an employee role
+async function updateEmployee() {
+
+    function askId() {
+        return ([
+            {
+                name: 'name',
+                type: 'input',
+                message: 'What is the employees ID?:'
+            }
+        ]);
+    }
+
+    const employeeId = await inquirer.prompt(askId());
+
+    connection.query('SELECT role.id, role.title FROM role ORDER BY role.id;', async (err, res) => {
+        if (err) throw err;
+        const {role} = await inquirer.prompt([
+            {
+                name: 'role',
+                type: 'list',
+                choices: () => res.map(res => res.title),
+                message: 'What is the employees new role?'
+            }
+        ]);
+        
+        let roleId;
+        for (const row of res) {
+            if (row.title === role) {
+                roleId = row.id;
+                continue;
+            }
+        }
+
+        connection.query(`UPDATE employees SET role_id = ${roleId} WHERE employees.id = ${employeeId.name}`, async (err, res) => {
+            if (err) throw err;
+            console.log('Role has been updated')
+            promptUser();
+        });
+    });
+}
